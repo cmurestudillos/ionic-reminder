@@ -10,7 +10,7 @@ exports.obtenerListas = async (req, res) => {
     }
 }
 
-exports.crearLista = async (req, res) => {
+exports.crearLista = (req, res) => {
     const errores = validationResult(req);
     if( !errores.isEmpty() ) {
         return res.status(400).json({errores: errores.array() })
@@ -19,8 +19,8 @@ exports.crearLista = async (req, res) => {
     try {
         const lista = new Lista(req.body);
         lista.creador = req.usuario.id;
-        await lista.save();
-        res.json({lista, msg:'Lista creada correctamente.'});
+        lista.save();
+        res.status(201).json({lista, msg: 'Lista creada correctamente.'});
     } catch (error) {
         res.status(500).send('Ha ocurrido un error al crear la lista.');
     }

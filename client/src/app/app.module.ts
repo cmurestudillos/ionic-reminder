@@ -7,13 +7,14 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 // Componentes
 import { AppComponent } from './app.component';
 // Peticiones HTTP
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 // Almacenamiento en memoria
 import { Storage } from '@ionic/storage';
 // Token cifrado
 import { JwtModule, JWT_OPTIONS } from '@auth0/angular-jwt';
 // Angular Material
 import { MaterialModule } from './modules/material.module';
+import { TokenInterceptor } from './services/token-interceptor.service';
 
 export function jwtOptionsFactory(storage:any) {
 	return {
@@ -42,7 +43,9 @@ export function jwtOptionsFactory(storage:any) {
   ],
   providers: [
     Storage,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true},
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

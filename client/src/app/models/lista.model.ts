@@ -2,7 +2,6 @@
 import { ListaItem } from './lista-item.model';
 
 export class Lista {
-  id: number;
   titulo: string;
   creadaEn: Date;
   terminadaEn!: Date | null;
@@ -14,6 +13,5 @@ export class Lista {
       this.creadaEn = new Date();
       this.terminada = false;
       this.items = [];
-      this.id = new Date().getTime();
   }
 }

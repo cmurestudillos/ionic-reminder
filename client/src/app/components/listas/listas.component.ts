@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { TareasService } from '../../services/tareas.service';
 import { Lista } from '../../models/lista.model';
 import { Router } from '@angular/router';
@@ -8,28 +8,42 @@ import { AlertController, IonList } from '@ionic/angular';
   selector: 'app-listas',
   templateUrl: './listas.component.html'
 })
-export class ListasComponent implements OnInit {
-
+export class ListasComponent {
   @ViewChild( IonList ) lista!: IonList;
   @Input() terminada = true;
+  listas: Lista[] = [];
 
-  constructor( public tareasService: TareasService, private router: Router, private alertCtrl: AlertController ) { }
+  constructor( public tareasService: TareasService,
+               private router: Router,
+               private alertCtrl: AlertController ) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.cargarListas();
+  }
+
+  cargarListas() {
+    this.tareasService.cargarListas().subscribe((listas:any) => {
+      this.listas = listas.listas;
+    });
+  }
+
 // Lista seleccionada para su edicion/vision
-  listaSeleccionada( lista: Lista ) {
-
+  listaSeleccionada( lista: any ) {
     if ( this.terminada ) {
-      this.router.navigate([`/tabs/tab2/agregar/${ lista.id }`]);
+      this.router.navigate([`/tabs/tab2/agregar/${ lista._id }`]);
     } else {
-      this.router.navigate([`/tabs/tab1/agregar/${ lista.id }`]);
+      this.router.navigate([`/tabs/tab1/agregar/${ lista._id }`]);
     }
 
   }
 
 // Borrar Lista
   borrarLista( lista: Lista ) {
-    this.tareasService.borrarLista( lista );
+    this.tareasService.borrarLista(lista).subscribe(() => {
+      // Realizar alguna acción después de borrar en el backend si es necesario
+      console.log('lista borrado');
+      this.cargarListas();
+    });
   }
 
 // Editar lista seleccionada
@@ -50,21 +64,22 @@ export class ListasComponent implements OnInit {
           text: 'Cancelar',
           role: 'cancel',
           handler: () => {
-            // console.log('Cancelar');
             this.lista.closeSlidingItems();
           }
         },
         {
           text: 'Actualizar',
-          handler: ( data ) => {
-            console.log(data);
-            if ( data.titulo.length === 0 ) {
+          handler: (data) => {
+            if (data.titulo.length === 0) {
               return;
             }
 
             lista.titulo = data.titulo;
-            this.tareasService.guardarIndexedDb();
-            this.lista.closeSlidingItems();
+            this.tareasService.actualizarLista(lista).subscribe(() => {
+              // Realizar alguna acción después de actualizar en el backend si es necesario
+              console.log('lista actualizado');
+              this.lista.closeSlidingItems();
+            });
           }
         }
       ]

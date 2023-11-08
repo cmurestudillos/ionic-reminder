@@ -17,6 +17,10 @@ const ListaSchema = mongoose.Schema({
         type: Boolean,
         default: false 
     },        
+    items: {
+        type: Array, 
+        default: []
+    },
     creador: {
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Usuario'

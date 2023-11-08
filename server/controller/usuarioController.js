@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 exports.crearUsuario = async(req, res) => {
     const errores = validationResult(req);
     if( !errores.isEmpty() ) {
+        console.log(errores);
         return res.status(400).json({errores: errores.array() })
     }
 
@@ -27,8 +28,7 @@ exports.crearUsuario = async(req, res) => {
         jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: 86400 // 86400 expires in 24 hours
         });
-
-        res.status(201).json(usuario);
+        res.status(201).json({msg: 'Usuario creado correctamente. Inicie sesion.', data: usuario});
     } catch (error) {
         res.status(400).send('Ha ocurrido un error.');
     }

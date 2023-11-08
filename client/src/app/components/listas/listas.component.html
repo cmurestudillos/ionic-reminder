@@ -1,6 +1,6 @@
 
 <ion-list>
-  <ion-item-sliding *ngFor="let lista of tareasService.listas | filtroCompletado:terminada">
+  <ion-item-sliding *ngFor="let lista of listas | filtroCompletado:terminada">
     <ion-item detail (click)="listaSeleccionada(lista)">
       <ion-label> {{ lista.titulo }}</ion-label>
       <ion-note slot="end" color="tertiary">{{ lista.items.length }} items</ion-note>

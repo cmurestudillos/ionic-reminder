@@ -20,34 +20,31 @@ export class AuthService {
 	constructor(
 		private http: HttpClient,
 		private helper: JwtHelperService,
-		private storage: Storage,
 		private plt: Platform,
 		private alertController: AlertController
 	) {
-		this.storage.create();
 		this.plt.ready().then(() => {
 			this.checkToken();
 		});
 	}
 
 	checkToken() {
-		this.storage.get(TOKEN_KEY).then((token) => {
-			if (token) {
-				let decoded = this.helper.decodeToken(token);
-				let isExpired = this.helper.isTokenExpired(token);
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      const decoded = this.helper.decodeToken(token);
+      const isExpired = this.helper.isTokenExpired(token);
 
-				if (!isExpired) {
-					this.user = decoded;
-					this.authenticationState.next(true);
-				} else {
-					this.storage.remove(TOKEN_KEY);
-				}
-			}
-		});
+      if (!isExpired) {
+        this.user = decoded;
+        this.authenticationState.next(true);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+      }
+    }
 	}
 
 	register(credentials:any) {
-		return this.http.post(`${this.url}/api/register`, credentials).pipe(
+		return this.http.post(`${this.url}/usuarios`, credentials).pipe(
 			catchError((e) => {
 				this.showAlert(e.error.msg);
 				throw new Error(e);
@@ -56,9 +53,9 @@ export class AuthService {
 	}
 
 login(credentials:any) {
-  return this.http.post<{token: string}>(`${this.url}/api/login`, credentials).pipe(
+  return this.http.post<{ token: string }>(`${this.url}/auth`, credentials).pipe(
     tap((res) => {
-      this.storage.set(TOKEN_KEY, res.token);
+      localStorage.setItem(TOKEN_KEY, res.token);
       this.user = this.helper.decodeToken(res.token);
       this.authenticationState.next(true);
     }),
@@ -70,9 +67,8 @@ login(credentials:any) {
 }
 
 	logout() {
-		this.storage.remove(TOKEN_KEY).then(() => {
-			this.authenticationState.next(false);
-		});
+    localStorage.removeItem(TOKEN_KEY);
+    this.authenticationState.next(false);
 	}
 
 	getSpecialData() {

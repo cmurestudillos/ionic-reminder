@@ -1,68 +1,47 @@
 import { Injectable } from '@angular/core';
-// Base de datos
-import Dexie from 'dexie';
+// Libreria para trabajar con peticiones al Backend
+import { HttpClient } from '@angular/common/http';
+// Operadores de RxJS
+import { Observable } from 'rxjs';
 // Modelo de datos
 import { Lista } from '../models/lista.model';
+// URL API - Bacnkend
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TareasService {
-  listas: Lista[] = [];
-  private db: any;
-  private table!: Dexie.Table<any>;
+  private apiUrl = environment.url;
 
-  constructor() {
-    this.cargarIndexedDb();
+  constructor(private http: HttpClient) {
+    this.cargarListas();
   }
 
-  // Al cargar la App, comprueba si hay algo grabado en Base de datos
-  async cargarIndexedDb () {
-    this.db = new Dexie('db-todolist');
-    this.db.version(1).stores({
-      lista: 'id, titulo, creadaEn, terminadaEn, terminada, items',
-    });
-
-    this.table = this.db.table('lista');
-
-    if ( this.table ) {
-      this.listas = await this.table.toArray();
-    } else {
-      this.listas = [];
-    }
+  // Cargar listas existentes en BBDD
+  cargarListas(): Observable<Lista[]> {
+    return this.http.get<Lista[]>(`${this.apiUrl}/listas`);
   }
 
-  // Funcion para crear lista
-  crearLista( titulo: string ) {
+  // Cargamos los items de la lista seleccionada
+  cargarTareasLista(listaId: string): Observable<Lista> {
+    return this.http.get<Lista>(`${this.apiUrl}/listas/${listaId}`);
+  }
+
+  // Crear nueva lista
+  crearLista(titulo: string): Observable<Lista> {
     const nuevaLista = new Lista(titulo);
-    this.listas.push(nuevaLista);
-    this.guardarIndexedDb();
+    return this.http.post<Lista>(`${this.apiUrl}/listas`, nuevaLista);
+  }
 
-    // Devolvemos el id de la lista para navegar
-    return nuevaLista.id;
+  // Actualizar una lista en el backend
+  actualizarLista(lista: Lista): Observable<Lista> {
+    return this.http.put<Lista>(`${this.apiUrl}/listas/${lista}`, lista);
   }
 
   // Borrar la lista seleccionada
-  borrarLista( lista: Lista ) {
-    this.listas = this.listas.filter( listaData => listaData.id !== lista.id );
-    this.guardarIndexedDb();
-  }
-
-  // Cargamos los items de la lista creada
-  cargarLista( id: string | number ) {
-    id = Number(id);
-    return this.listas.find(  listaData => listaData.id === id );
-  }
-
-  // Guardar los valores en el Storage
-  async guardarIndexedDb() {
-    // Borramos los elementos anteriores de la tabla
-    await this.table.clear();
-
-    // Agregamos los elementos de la lista uno por uno
-    for (const lista of this.listas) {
-      await this.table.add(lista);
-    }
+  borrarLista(lista: Lista): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/listas/${lista}`);
   }
 
 }

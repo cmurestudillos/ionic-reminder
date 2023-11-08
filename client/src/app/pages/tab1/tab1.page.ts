@@ -12,12 +12,13 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page {
+  isToastOpen = false;
+  textValue = '';
 
   constructor(public tareasService: TareasService, private router: Router, private alertCtrl: AlertController) {}
 
 
   async agregarLista() {
-
     const alert = await this.alertCtrl.create({
       header: 'Nueva lista',
       inputs: [
@@ -38,14 +39,18 @@ export class Tab1Page {
         {
           text: 'Crear',
           handler: ( data ) => {
-            console.log(data);
             if ( data.titulo.length === 0 ) {
               return;
             }
 
-            const listaId = this.tareasService.crearLista( data.titulo );
-            // Redirigir a la lista creada por su id
-            this.router.navigate([`/tabs/tab1/agregar/${ listaId }`]);
+            this.tareasService.crearLista(data.titulo).subscribe((response: any) => {
+              if(response){
+                this.isToastOpen = true
+                this.textValue = response.msg
+                // Redirigir a la lista creada por su id
+                this.router.navigate([`/tabs/tab1/agregar/${ response.lista._id }`]);
+              }
+            });
           }
         }
       ]
